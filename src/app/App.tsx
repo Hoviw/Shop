@@ -5,6 +5,7 @@ import { ProductDetail } from "./components/ProductDetail";
 import { AdminPanel, type CardKey, type Order, type CategoryMeta } from "./components/AdminPanel";
 import { Checkout } from "./components/Checkout";
 import { NeonSearch } from "./components/NeonSearch";
+import { HomePage } from "./components/HomePage";
 import { initialProducts, type Product } from "./data";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -33,6 +34,7 @@ const initialOrders: Order[] = [
 ];
 
 export default function App() {
+  const [landed, setLanded] = useState(false);
   const [view, setView] = useState<View>("shop");
   const [category, setCategory] = useState<Category>("all");
   const [adminTab, setAdminTab] = useState<AdminTab>("dashboard");
@@ -54,68 +56,84 @@ export default function App() {
   }, [category, products, query]);
 
   return (
-    <div className="size-full flex bg-neutral-950 text-white overflow-hidden">
-      <Sidebar view={view} setView={setView} category={category} setCategory={setCategory} adminTab={adminTab} setAdminTab={setAdminTab} />
+    <>
+      <AnimatePresence>
+        {!landed && (
+          <motion.div
+            key="home"
+            className="fixed inset-0 z-50"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+          >
+            <HomePage onEnter={() => setLanded(true)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <main className="flex-1 h-full relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/3 w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-3xl" />
-        </div>
+      <div className="size-full flex bg-neutral-950 text-white overflow-hidden">
+        <Sidebar view={view} setView={setView} category={category} setCategory={setCategory} adminTab={adminTab} setAdminTab={setAdminTab} />
 
-        <AnimatePresence mode="wait">
-          {view === "shop" ? (
-            <motion.div key="shop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-full overflow-y-auto px-12 py-10">
-              <div className="text-center">
-                <div className="text-[10px] tracking-[0.4em] text-amber-200/70 uppercase">Spring / Summer 2026</div>
-                <h1 className="mt-3 text-5xl text-white tracking-wide" style={{ fontFamily: "serif" }}>自助臻选空间</h1>
-                <p className="mt-3 text-white/50 max-w-xl mx-auto leading-relaxed">每一件商品都经过严苛臻选 · 点击任意商品查看详情并直接下单</p>
-              </div>
+        <main className="flex-1 h-full relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/4 left-1/3 w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-3xl" />
+            <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-3xl" />
+          </div>
 
-              <div className="mt-12 mb-6">
-                <NeonSearch value={query} onChange={setQuery} />
-              </div>
+          <AnimatePresence mode="wait">
+            {view === "shop" ? (
+              <motion.div key="shop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-full overflow-y-auto px-12 py-10">
+                <div className="text-center">
+                  <div className="text-[10px] tracking-[0.4em] text-amber-200/70 uppercase">Spring / Summer 2026</div>
+                  <h1 className="mt-3 text-5xl text-white tracking-wide" style={{ fontFamily: "serif" }}>自助臻选空间</h1>
+                  <p className="mt-3 text-white/50 max-w-xl mx-auto leading-relaxed">每一件商品都经过严苛臻选 · 点击任意商品查看详情并直接下单</p>
+                </div>
 
-              <div className="mt-14 flex items-center justify-between">
-                <div className="text-xs text-white/40 tracking-[0.3em]">{filtered.length} 件商品</div>
-                <div className="text-xs text-white/40 tracking-[0.3em]">悬停展开 · 点击查看</div>
-              </div>
+                <div className="mt-12 mb-6">
+                  <NeonSearch value={query} onChange={setQuery} />
+                </div>
 
-              <div className="mt-6">
-                {filtered.length > 0 ? (
-                  <ProductGrid key={category + query} products={filtered} onSelect={setSelected} />
-                ) : (
-                  <div className="h-96 flex items-center justify-center text-white/40 tracking-widest">未找到相关商品</div>
-                )}
-              </div>
+                <div className="mt-14 flex items-center justify-between">
+                  <div className="text-xs text-white/40 tracking-[0.3em]">{filtered.length} 件商品</div>
+                  <div className="text-xs text-white/40 tracking-[0.3em]">悬停展开 · 点击查看</div>
+                </div>
 
-              <div className="mt-12 grid grid-cols-3 gap-6 text-white/60 text-sm">
-                {[
-                  { t: "即时发货", d: "支付后即刻发送卡密" },
-                  { t: "七日无忧", d: "七天内无理由退换" },
-                  { t: "银联加密", d: "银行级支付安全" },
-                ].map((f) => (
-                  <div key={f.t} className="p-5 rounded-2xl border border-white/5 bg-white/[0.02]">
-                    <div className="text-white tracking-wider">{f.t}</div>
-                    <div className="mt-1 text-xs text-white/40">{f.d}</div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-full">
-              <AdminPanel tab={adminTab} products={products} setProducts={setProducts} categories={categories} setCategories={setCategories} cardKeys={cardKeys} setCardKeys={setCardKeys} orders={orders} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+                <div className="mt-6">
+                  {filtered.length > 0 ? (
+                    <ProductGrid key={category + query} products={filtered} onSelect={setSelected} />
+                  ) : (
+                    <div className="h-96 flex items-center justify-center text-white/40 tracking-widest">未找到相关商品</div>
+                  )}
+                </div>
 
-      <ProductDetail
-        product={selected}
-        onClose={() => setSelected(null)}
-        onBuy={(p, q) => { setBuying({ product: p, qty: q }); setSelected(null); }}
-      />
-      <Checkout order={buying} onClose={() => setBuying(null)} />
-    </div>
+                <div className="mt-12 grid grid-cols-3 gap-6 text-white/60 text-sm">
+                  {[
+                    { t: "即时发货", d: "支付后即刻发送卡密" },
+                    { t: "七日无忧", d: "七天内无理由退换" },
+                    { t: "银联加密", d: "银行级支付安全" },
+                  ].map((f) => (
+                    <div key={f.t} className="p-5 rounded-2xl border border-white/5 bg-white/[0.02]">
+                      <div className="text-white tracking-wider">{f.t}</div>
+                      <div className="mt-1 text-xs text-white/40">{f.d}</div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-full">
+                <AdminPanel tab={adminTab} products={products} setProducts={setProducts} categories={categories} setCategories={setCategories} cardKeys={cardKeys} setCardKeys={setCardKeys} orders={orders} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+
+        <ProductDetail
+          product={selected}
+          onClose={() => setSelected(null)}
+          onBuy={(p, q) => { setBuying({ product: p, qty: q }); setSelected(null); }}
+        />
+        <Checkout order={buying} onClose={() => setBuying(null)} />
+      </div>
+    </>
   );
 }
