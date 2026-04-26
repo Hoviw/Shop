@@ -272,7 +272,7 @@ export function HomePage({ onEnter }: HomePageProps) {
     return () => el.removeEventListener("scroll", handler);
   }, []);
 
-  const heroOpacity = Math.max(0, 1 - scrollY / (window.innerHeight * 0.4));
+  const heroOpacity = window.innerHeight > 0 ? Math.max(0, 1 - scrollY / (window.innerHeight * 0.4)) : 1;
   const heroY = -(scrollY * 0.12);
 
   const handleEnter = () => {
@@ -285,7 +285,7 @@ export function HomePage({ onEnter }: HomePageProps) {
       {!exiting ? (
         <motion.div
           key="hp"
-          className="fixed inset-0 overflow-hidden"
+          className="fixed inset-0 overflow-hidden bg-[#020214]"
           exit={{ opacity: 0, scale: 1.03 }}
           transition={{ duration: 0.65, ease: "easeInOut" }}
         >
